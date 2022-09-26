@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Date>2022-09-10T15:11:30.7921099</Date>
+    <Author>auror\Administrator</Author>
+    <Description>Honey Account(Adam) Monitoring. Sending emails on failed logon events.</Description>
+    <URI>\Monitor_Honey_User</URI>
+  </RegistrationInfo>
+  <Principals>
+    <Principal id="Author">
+      <UserId>S-1-5-21-2928777613-1704353729-2693998158-500</UserId>
+      <LogonType>Password</LogonType>
+      <RunLevel>HighestAvailable</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <ExecutionTimeLimit>PT2H</ExecutionTimeLimit>
+    <MultipleInstancesPolicy>Parallel</MultipleInstancesPolicy>
+    <IdleSettings>
+      <StopOnIdleEnd>true</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+  </Settings>
+  <Triggers>
+    <EventTrigger>
+      <Subscription>&lt;QueryList&gt;&lt;Query Id="0" Path="Security"&gt;&lt;Select Path="Security"&gt;
+    (*[System[EventID='4771']] or *[System[EventID='4625']]) and
+    *[EventData[Data [@Name='TargetUserName']='Adam']]
+    &lt;/Select&gt;&lt;/Query&gt;&lt;/QueryList&gt;</Subscription>
+    </EventTrigger>
+  </Triggers>
+  <Actions Context="Author">
+    <Exec>
+      <Command>C:\Windows\System32\curl.exe</Command>
+      <Arguments>-X POST --data-urlencode "payload={\"channel\": \"#monitoring\", \"username\": \"Honeypot\", \"text\": \"Someone tried loggin in to Adam user account!!.\", \"icon_emoji\": \":ghost:\"}" https://hooks.slack.com/services/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</Arguments>
+    </Exec>
+    <Exec>
+      <Command>C:\Windows\System32\curl.exe</Command>
+      <Arguments>http://canarytokens.com/terms/c3ysvo9uz3arju4c5kkw3h55z/post.jsp</Arguments>
+    </Exec>
+  </Actions>
+</Task>

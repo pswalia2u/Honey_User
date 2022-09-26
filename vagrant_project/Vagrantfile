@@ -1,0 +1,32 @@
+Vagrant.configure("2") do |config|
+  config.vm.communicator = "winrm"
+  config.winrm.transport = :plaintext
+  config.winrm.basic_auth_only = true
+  config.vm.define "dc" do |dc|
+    #dc.vm.box = "..\\windows_2022_vmware.box"
+    dc.vm.box = "..\\windows_2022_virtualbox.box"
+    dc.vm.provider "virtualbox" do |v|
+      v.gui = true
+      v.linked_clone = true
+      #v.vmx["memsize"] = "4096"
+    end
+    dc.vm.provision "shell", path: "provisioning_scripts/Change-Hostname.ps1", privileged: true, args: "-password vagrant -user vagrant -hostname Machine-A-dc"
+    dc.vm.provision "shell", reboot: true
+    #dc.vm.provision "shell", inline: "Start-Sleep -s 10"
+    dc.vm.provision "shell", inline: "Write-Host -ForegroundColor Green Setting_Administrator_password.. ; net user Administrator Testertest@123"
+    dc.vm.provision "shell", inline: "Write-Host -ForegroundColor Green Stopping_Win_Updates ; stop-service wuauserv ; set-service wuauserv -startup disabled ; Write-Output Stopped_Updates"
+    dc.vm.provision "shell", inline: "Remove-WindowsFeature Windows-Defender"
+    dc.vm.provision "shell", inline: "Start-Sleep -s 10"
+    dc.vm.provision "shell", inline: "Write-Host -ForegroundColor Green Installing AD-domain-services ; install-windowsfeature -name 'ad-domain-services' -includemanagementtools"
+    dc.vm.provision "shell", path: "provisioning_scripts/Install-ADDSForest.ps1", privileged: true, args: "-domainName auror.local -domainNetbiosName auror -safeModePass 'Testertest@123'"
+    dc.vm.provision "shell", inline: "Write-Host -ForegroundColor Green Sleeping for some time...; Start-Sleep -s 10"
+    #Creating a honey user
+    dc.vm.provision "shell", path: "provisioning_scripts/New-ADUser.ps1", privileged: true, args: "-Password ComplexPass@123 -user Adam"
+    #Enabling Local and Domain logon events logging in Event Viewer
+    dc.vm.provision "shell", inline: "Write-Host -ForegroundColor Green Enabling local and domain logging...; auditpol /set /category:\"System\",\"Account Management\",\"Account Logon\",\"Logon/Logoff\",\"Policy Change\" /failure:enable /success:enable"
+    #Creating a scheduled task
+    dc.vm.provision "shell", inline: "Write-Host -ForegroundColor Green Creating scheduled task. ; Register-ScheduledTask -TaskName Monitor_Honey_User -Xml (Get-Content 'C:\\vagrant\\provisioning_scripts\\task.xml' | Out-String) -Force -User \"Administrator\" -Password \"Testertest@123\""
+    #dc.vm.provision "shell", inline: "Write-Host -ForegroundColor Green Creating scheduled task. ; Register-ScheduledTask -TaskName Monitor_Honey_User -Xml (curl.exe http://129.154.231.67/task.xml --silent | Out-String) -Force -User \"Administrator\" -Password \"Testertest@123\""
+    #dc.vm.provision "shell", path: "provision/ps.ps1", args: "domain-controller-wait-for-ready.ps1"
+  end
+end
