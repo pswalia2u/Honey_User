@@ -34,7 +34,7 @@
   <Actions Context="Author">
     <Exec>
       <Command>C:\Windows\System32\curl.exe</Command>
-      <Arguments>-X POST --data-urlencode "payload={\"channel\": \"#monitoring\", \"username\": \"Honeypot\", \"text\": \"Someone tried loggin in to Adam user account!!.\", \"icon_emoji\": \":ghost:\"}" https://hooks.slack.com/services/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</Arguments>
+      <Arguments>-X POST --data-urlencode "payload={\"channel\": \"#monitoring\", \"username\": \"Honeypot\", \"text\": \"Someone tried loggin in to Adam user account!!.\", \"icon_emoji\": \":ghost:\"}" <Webhook URL></Arguments>
     </Exec>
     <Exec>
       <Command>C:\Windows\System32\curl.exe</Command>
